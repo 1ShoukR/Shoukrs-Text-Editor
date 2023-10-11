@@ -1,4 +1,4 @@
-use std::io::{self, Read, stdout};
+use std::io::{self, Read, stdout, Error};
 use crossterm::terminal::enable_raw_mode;
 /*
 Short for: 
@@ -8,16 +8,18 @@ use std::io::Read
 
 
 fn main() {
-    let _raw_mode = enable_raw_mode().unwrap();
+    let _raw_mode: () = enable_raw_mode().unwrap();
 
-    for byte in io::stdin().bytes() {
-        let byte = byte.unwrap();
-        let character = byte as char;
+    for result in io::stdin().bytes() {  // Specify std::io::Error
+        let byte: u8 = result.unwrap();
+        let character: char = byte as char;
         if character.is_control() {
             println!("{:?} \r", byte);
         } else {
             println!("{:?} ({})\r", byte, character);
         }
+    }
+
 
 
 
@@ -29,4 +31,3 @@ fn main() {
         //     break;
         // }
     }
-}
