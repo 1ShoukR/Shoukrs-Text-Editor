@@ -1,5 +1,5 @@
-use std::io::{self, Read, stdout, Error};
-use crossterm::terminal::enable_raw_mode;
+use std::io::{Result};
+use crossterm::{terminal, event::{self, KeyCode, Event::*}};
 /*
 Short for: 
 use std::io
@@ -7,19 +7,23 @@ use std::io::Read
 */ 
 
 
-fn main() {
-    let _raw_mode: () = enable_raw_mode().unwrap();
-
-    for result in io::stdin().bytes() {  // Specify std::io::Error
-        let byte: u8 = result.unwrap();
-        let character: char = byte as char;
-        if character.is_control() {
-            println!("{:?} \r", byte);
+fn main() -> Result<()> {
+    terminal::enable_raw_mode()?;
+    loop {
+        if let Ok(event ) = event::read() {
+            if let Key(key_event) = event {
+                if key_event.code == KeyCode::Char('q') {
+                    break;
+                } else {
+                    println!("{:?}\n", event);
+                }
+            }
         } else {
-            println!("{:?} ({})\r", byte, character);
+            break
         }
     }
-
+    terminal::disable_raw_mode()?;
+    Ok(())
 
 
 
