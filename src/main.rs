@@ -1,37 +1,45 @@
-use std::io::{Result};
-use crossterm::{terminal, event::{self, KeyCode, Event::*}};
-/*
-Short for: 
-use std::io
-use std::io::Read
-*/ 
-
+use std::{io::{Result, self}, time::Duration};
+use crossterm::{
+    terminal, event::{self, KeyCode, KeyEvent, Event::*, poll}
+};
 
 fn main() -> Result<()> {
     terminal::enable_raw_mode()?;
+
     loop {
-        if let Ok(event ) = event::read() {
-            if let Key(key_event) = event {
-                if key_event.code == KeyCode::Char('q') {
-                    break;
+        let mut c = None;
+
+        match poll(Duration::from_millis(100)) {
+            Ok(true) => {
+                if let Ok(Key(key_event)) = event::read() {
+                    c = Some(key_event);
                 } else {
-                    println!("{:?}\n", event);
+                    die("Read Failed");
                 }
             }
+            Ok(false) => {}
+            Err(_) => {
+                die("Poll Failed");
+            }
+        }
+
+        if let Some(key_event) = c {
+            if key_event.code == KeyCode::Char('q') {
+                break;
+            } else {
+                println!("{:?}\r", key_event)
+            }
         } else {
-            break
+            println!("no key\r")
         }
     }
+
     terminal::disable_raw_mode()?;
     Ok(())
+}
 
-
-
-
-        // let b = b.unwrap();
-        // let character = b as char;
-        // if character == 'q' { // NOTE: Characters in Rust are single quoted to work, not double quoted
-        //     // this if statement ends the program if there is a character 'q' in the input
-        //     break;
-        // }
-    }
+fn die<S: Into<String>>(message: S) {
+    let _ = terminal::disable_raw_mode();
+    eprintln!("{}: {}", message.into(), std::io::Error::last_os_error());
+    std::process::exit(1)
+}
