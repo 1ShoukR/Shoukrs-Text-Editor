@@ -1,6 +1,6 @@
 use std::{io::{Result, self}, time::Duration};
 use crossterm::{
-    terminal, event::{self, KeyCode, KeyEvent, Event::*, poll}
+    terminal, event::{self, KeyCode,  KeyEvent, Event::*, poll, KeyModifiers}
 };
 
 fn main() -> Result<()> {
@@ -23,11 +23,11 @@ fn main() -> Result<()> {
             }
         }
 
-        if let Some(key_event) = c {
-            if key_event.code == KeyCode::Char('q') {
+        if let Some(c) = c {
+            if c.code == KeyCode::Char('c') && c.modifiers.contains(KeyModifiers::CONTROL) {
                 break;
             } else {
-                println!("{:?}\r", key_event)
+                println!("{:?}\r", c)
             }
         } else {
             println!("no key\r")
